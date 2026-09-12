@@ -1,0 +1,208 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Road Racer</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #222;
+      font-family: Arial;
+      text-align: center;
+    }
+
+    #game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background: #555;
+      overflow: hidden;
+    }
+
+    #road {
+      width: 70%;
+      height: 100%;
+      margin: auto;
+      background: #333;
+      border-left: 8px solid white;
+      border-right: 8px solid white;
+      position: relative;
+    }
+
+    .line {
+      position: absolute;
+      width: 8px;
+      height: 80px;
+      background: white;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    #car {
+      position: absolute;
+      width: 45px;
+      height: 80px;
+      background: red;
+      border-radius: 10px;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 10px #000;
+    }
+
+    .enemy {
+      position: absolute;
+      width: 45px;
+      height: 80px;
+      background: yellow;
+      border-radius: 10px;
+    }
+
+    #score {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      color: white;
+      font-size: 24px;
+      z-index: 5;
+    }
+
+    #controls {
+      position: fixed;
+      bottom: 20px;
+      width: 100%;
+      z-index: 10;
+    }
+
+    button {
+      font-size: 28px;
+      padding: 12px 35px;
+      margin: 5px;
+      border: none;
+      border-radius: 12px;
+    }
+
+    #gameOver {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.8);
+      color: white;
+      z-index: 20;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="game">
+  <div id="score">Score: 0</div>
+  <div id="road">
+    <div id="car"></div>
+  </div>
+</div>
+
+<div id="controls">
+  <button onclick="moveLeft()">⬅️</button>
+  <button onclick="moveRight()">➡️</button>
+</div>
+
+<div id="gameOver">
+  <h1>💥 GAME OVER</h1>
+  <h2 id="finalScore"></h2>
+  <button onclick="location.reload()">🔄 Restart</button>
+</div>
+
+<script>
+const road = document.getElementById("road");
+const car = document.getElementById("car");
+const scoreText = document.getElementById("score");
+
+let carX = 50;
+let score = 0;
+let speed = 5;
+let gameRunning = true;
+
+function moveLeft() {
+  if (carX > 10) carX -= 8;
+}
+
+function moveRight() {
+  if (carX < 90) carX += 8;
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") moveLeft();
+  if (e.key === "ArrowRight") moveRight();
+});
+
+function createEnemy() {
+  if (!gameRunning) return;
+
+  const enemy = document.createElement("div");
+  enemy.className = "enemy";
+
+  enemy.style.left = (10 + Math.random() * 80) + "%";
+  enemy.style.top = "-100px";
+  road.appendChild(enemy);
+
+  let y = -100;
+
+  const move = setInterval(() => {
+    if (!gameRunning) {
+      clearInterval(move);
+      enemy.remove();
+      return;
+    }
+
+    y += speed;
+    enemy.style.top = y + "px";
+
+    const a = car.getBoundingClientRect();
+    const b = enemy.getBoundingClientRect();
+
+    if (
+      a.left < b.right &&
+      a.right > b.left &&
+      a.top < b.bottom &&
+      a.bottom > b.top
+    ) {
+      gameRunning = false;
+      document.getElementById("finalScore").textContent =
+        "Score: " + score;
+      document.getElementById("gameOver").style.display = "flex";
+      clearInterval(move);
+    }
+
+    if (y > window.innerHeight) {
+      enemy.remove();
+      clearInterval(move);
+      score++;
+      scoreText.textContent = "Score: " + score;
+
+      if (score % 5 === 0) speed += 1;
+    }
+  }, 20);
+}
+
+setInterval(createEnemy, 1000);
+
+function update() {
+  car.style.left = carX + "%";
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
+
+चलाने का तरीका: इसको game.html नाम से सेव करके Chrome में खोलो—फिर ⬅️ ➡️ दबाकर गाड़ी बचानी है। 😎🏎️
